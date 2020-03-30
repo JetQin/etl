@@ -1,7 +1,7 @@
 click
 Werkzeug==0.16.1
 flask
-# flask_cors
+flask_cors
 flask_bcrypt
 flask-restplus
 flask-injector

@@ -28,6 +28,6 @@ setup(
     include_package_data=True,
     entry_points={"console_scripts": ["swagger_server=swagger_server.__main__:main"]},
     long_description="""\
-    This is an example server for TO-DO list.  This is part of the collection of articles dedicated to the development of RESTful API. To know more visit the [repository](https://github.com/dandpz/restfulapi-howto) containing the code for these examples and more.
+    This is an example server for TO-DO list.  This is part of the collection of articles dedicated to the development of RESTful API.
     """,
 )

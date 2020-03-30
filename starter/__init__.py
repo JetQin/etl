@@ -48,7 +48,6 @@ def create_app():
     bcrypt.init_app(app)
     jwt.init_app(app)
     cors.init_app(app)
-    # api.init_app(app)
     from apis import api_v1
     app.register_blueprint(api_v1)
     logger.info(app.config)
@@ -57,5 +56,3 @@ def create_app():
         db.create_all()
     return app
 
-
-# FlaskInjector(app=app, modules=[configure])
