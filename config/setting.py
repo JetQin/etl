@@ -4,13 +4,16 @@ from util.encrypt_util import RSAEncryption
 class Config:
     PROFILE = 'development'
     HOST = 'localhost'
-    PORT = 9000
+    PORT = 5000
     PRIVATE_KEY_PATH = ''
     PUBLIC_KEY_PATH = ''
     DB_USERNAME = ''
     DB_PASSWORD = ''
     LOG_PATH = ''
 
+    JWT_HEADER_TYPE = ''
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     JWT_ISSUER = 'io.github.jetqin'
     JWT_LIFETIME_SECONDS = 600
     JWT_ALGORITHM = 'RS256'
@@ -21,7 +24,12 @@ class DevConfig(Config):
 
     private_key_path = '/Users/jet/code/python/etl-app/config/jetqin.key'
     public_key_path = '/Users/jet/code/python/etl-app/config/jetqin.pub'
-    rsa = RSAEncryption(private_key_path, public_key_path)
+    RSA = RSAEncryption(private_key_path, public_key_path)
+
+    with open(private_key_path) as pri_key_file:
+        JWT_PRIVATE_KEY = pri_key_file.read()
+    with open(public_key_path) as pub_key_file:
+        JWT_PUBLIC_KEY = pub_key_file.read()
 
     DEBUG = True
     PROFILE = 'dev'
@@ -41,6 +49,13 @@ class TestConfig(Config):
     private_key_path = '/Users/jet/code/python/etl-app/config/jetqin.key'
     public_key_path = '/Users/jet/code/python/etl-app/config/jetqin.pub'
     RSA = RSAEncryption(private_key_path, public_key_path)
+
+    JWT_ALGORITHM = 'RS256'
+    with open(private_key_path) as pri_key_file:
+        JWT_PRIVATE_KEY = pri_key_file.read()
+    with open(public_key_path) as pub_key_file:
+        JWT_PUBLIC_KEY = pub_key_file.read()
+
 
     DEBUG = False
     TESTING = True

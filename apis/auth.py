@@ -1,72 +1,69 @@
-# from functools import wraps
-# from flask import jsonify, request
-# from starter import jwt
-# from flask_jwt_extended import (
-#     jwt_required, create_access_token,
-#     verify_jwt_in_request, create_refresh_token,
-#     get_jwt_identity, get_jwt_claims
-# )
-#
-#
-# def admin_required(fn):
-#     @wraps(fn)
-#     def wrapper(*args, **kwargs):
-#         verify_jwt_in_request()
-#         claims = get_jwt_claims()
-#         if claims['roles'] != 'admin':
-#             return jsonify(msg='Admins only!'), 403
-#         else:
-#             return fn(*args, **kwargs)
-#     return wrapper
-#
-# # Create a function that will be called whenever create_access_token
-# # is used. It will take whatever object is passed into the
-# # create_access_token method, and lets us define what custom claims
-# # should be added to the access token.
-# @jwt.user_claims_loader
-# def add_claims_to_access_token(user):
-#     return {'roles': user.roles}
-#
-#
-# # Create a function that will be called whenever create_access_token
-# # is used. It will take whatever object is passed into the
-# # create_access_token method, and lets us define what the identity
-# # of the access token should be.
-# @jwt.user_identity_loader
-# def user_identity_lookup(user):
-#     return user.username
-#
-#
-# @app.route('/login', methods=['POST'])
-# def login():
-#     username = request.json.get('username', None)
-#     password = request.json.get('password', None)
-#     # if username != 'test' or password != 'test':
-#     #     return jsonify({"msg": "Bad username or password"}), 401
-#
-#     # Create an example UserObject
-#     if username == 'admin':
-#         user = UserObject(username='test', roles=['foo', 'admin'])
-#     else:
-#         user = UserObject(username='test', roles=['foo', 'bar'])
-#     # We can now pass this complex object directly to the
-#     # create_access_token method. This will allow us to access
-#     # the properties of this object in the user_claims_loader
-#     # function, and get the identity of this object from the
-#     # user_identity_loader function.
-#     access_token = create_access_token(identity=user)
-#     refresh_token = create_refresh_token(identity=user)
-#     ret = {'access_token': access_token, 'refresh_token': refresh_token}
-#     return jsonify(ret), 200
-#
-#
-# @app.route('/protected', methods=['GET'])
-# @jwt_required
-# @admin_required
-# def protected():
-#     ret = {
-#         'current_identity': get_jwt_identity(),  # test
-#         'current_roles': get_jwt_claims()['roles']  # ['foo', 'bar']
-#     }
-#     return jsonify(ret), 200
-#
+from flask import Response, request
+from flask_restplus import Resource, Namespace, fields
+from flask_jwt_extended import (
+    jwt_required, create_access_token, create_refresh_token, get_raw_jwt,
+    get_jwt_identity, jwt_refresh_token_required
+)
+from service import UserService, is_token_revoked, revoke_token, add_token_to_database
+from starter import app, jwt
+
+
+auth_api = Namespace('auth', description='authorization related operations')
+login_parser = auth_api.parser()
+login_parser.add_argument('username', type=str, required=True, help='user name', location='form')
+login_parser.add_argument('password', type=str, required=True, help='password', location='form')
+
+
+@jwt.token_in_blacklist_loader
+def check_if_token_revoked(decoded_token):
+    return is_token_revoked(decoded_token)
+
+
+@auth_api.route('/login')
+class AuthLogin(Resource):
+
+    def __init__(self, api=auth_api):
+        self.api = api
+        self.service = UserService()
+
+    @auth_api.doc(description='login auth', parser=login_parser)
+    def post(self):
+        args = login_parser.parse_args()
+        name = args['username']
+        password = args['password']
+        user = self.service.find_user_by_name(name)
+        if user and user.check_password(password):
+            access_token = create_access_token(identity=user.id)
+            refresh_token = create_refresh_token(identity=user.id)
+            # Store the tokens in our store with a status of not currently revoked.
+            add_token_to_database(access_token, app.config['JWT_IDENTITY_CLAIM'])
+            add_token_to_database(refresh_token, app.config['JWT_IDENTITY_CLAIM'])
+            ret = {'access_token': access_token, 'refresh_token': refresh_token}
+            return ret
+        else:
+            return Response('Auth failed')
+
+
+@auth_api.route('/logout')
+class AuthLogout(Resource):
+
+    @jwt_required
+    @auth_api.doc(security='jwt')
+    def post(self):
+        jwt = get_raw_jwt()
+        current_user = get_jwt_identity()
+        revoke_token(jti=jwt['jti'], user=current_user)
+        return Response('Logout successfully')
+
+
+@auth_api.route('/refresh')
+class AuthRefresh(Resource):
+
+    @jwt_refresh_token_required
+    @auth_api.doc(security='jwt')
+    def post(self):
+        current_user = get_jwt_identity()
+        access_token = create_access_token(identity=current_user)
+        add_token_to_database(access_token, app.config['JWT_IDENTITY_CLAIM'])
+        ret = {'access_token': access_token }
+        return ret

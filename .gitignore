@@ -1,1 +1,12 @@
 .idea/
+*.pyc
+*.pyo
+__pycache__/
+apis/__pycache__/
+config/__pycache__/
+model/__pycache__/
+model/exception/__pycache__/
+service/__pycache__/
+starter/__pycache__/
+test/__pycache__/
+util/__pycache__/

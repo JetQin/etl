@@ -1,0 +1,2 @@
+class UserAlreadExistException(Exception):
+    pass

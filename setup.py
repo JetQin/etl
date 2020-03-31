@@ -13,7 +13,9 @@ VERSION = "1.0.0"
 # prerequisite: setuptools
 # http://pypi.python.org/pypi/setuptools
 
-REQUIRES = ["connexion"]
+REQUIRES = [
+    "connexion"
+]
 
 setup(
     name=NAME,
@@ -26,8 +28,6 @@ setup(
     packages=find_packages(),
     package_data={"": ["swagger/swagger.yaml"]},
     include_package_data=True,
-    entry_points={"console_scripts": ["swagger_server=swagger_server.__main__:main"]},
-    long_description="""\
-    This is an example server for TO-DO list.  This is part of the collection of articles dedicated to the development of RESTful API.
-    """,
+    entry_points={"console_scripts": [""]},
+    long_description="""This is an example development of RESTful API.""",
 )
