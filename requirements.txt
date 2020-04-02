@@ -8,5 +8,6 @@ flask-injector
 flask-jwt-extended
 Flask-SQLAlchemy
 mysql-connector-python
+PyYAML
 pycryptodome
 pysaprk

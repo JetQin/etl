@@ -1,5 +1,7 @@
 import os
+import yaml
 import logging
+from logging.config import fileConfig, dictConfig
 from datetime import date, datetime
 from flask import Flask
 from flask.json import JSONEncoder
@@ -9,8 +11,34 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from config.setting import configs
 
+# dictConfig({
+#     'version': 1,
+#     'formatters': {
+#         'default': {
+#             'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+#         }
+#     },
+#     'handlers': {
+#         'wsgi': {
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'level': 'INFO',
+#             'filename': 'app.log',
+#             'formatter': 'default',
+#             'maxBytes': 10485760,
+#             'backupCount': 10,
+#             'encoding': 'utf-8'
+#         }
+#     },
+#     'root': {
+#         'level': 'INFO',
+#         'handlers': ['wsgi']
+#     }
+# })
 
-logger = logging.getLogger(__name__)
+with open('logging.yaml') as f:
+    config = yaml.safe_load(f.read())
+    logging.config.dictConfig(config)
+
 app = Flask(__name__)
 
 # db init
@@ -39,9 +67,9 @@ class CustomJSONEncoder(JSONEncoder):
         return JSONEncoder.default(self, obj)
 
 
-def create_app():
-    print("***create app**")
-    profile = os.environ.get('profile', 'test')
+def create_app(profile=None):
+    app.logger.info("***create app**")
+    profile = os.environ.get('profile', 'test') if profile is None else profile
     app.config.from_object(configs[profile])
     app.json_encoder = CustomJSONEncoder
     db.init_app(app)
@@ -50,9 +78,11 @@ def create_app():
     cors.init_app(app)
     from apis import api_v1
     app.register_blueprint(api_v1)
-    logger.info(app.config)
+    app.logger.info(app.config)
     with app.app_context():
         print("init db")
         db.create_all()
     return app
 
+
+logger = app.logger
