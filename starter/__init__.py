@@ -35,10 +35,6 @@ from config.setting import configs
 #     }
 # })
 
-with open('logging.yaml') as f:
-    config = yaml.safe_load(f.read())
-    logging.config.dictConfig(config)
-
 app = Flask(__name__)
 
 # db init
@@ -52,6 +48,9 @@ cors = CORS()
 
 # json web token support
 jwt = JWTManager()
+
+# logger config
+logger = app.logger
 
 
 class CustomJSONEncoder(JSONEncoder):
@@ -68,9 +67,14 @@ class CustomJSONEncoder(JSONEncoder):
 
 
 def create_app(profile=None):
-    app.logger.info("***create app**")
+    logger.info("***create app**")
     profile = os.environ.get('profile', 'test') if profile is None else profile
     app.config.from_object(configs[profile])
+    log_config = os.path.abspath('logging.yaml')
+    with open(log_config) as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+
     app.json_encoder = CustomJSONEncoder
     db.init_app(app)
     bcrypt.init_app(app)
@@ -80,9 +84,8 @@ def create_app(profile=None):
     app.register_blueprint(api_v1)
     app.logger.info(app.config)
     with app.app_context():
-        print("init db")
+        logger.info("init db")
         db.create_all()
     return app
 
 
-logger = app.logger

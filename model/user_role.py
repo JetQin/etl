@@ -4,7 +4,7 @@ from starter import db
 from model.base_model import BaseModel
 
 
-association_table = db.Table('ETL_USER_ROLE',
+roles = db.Table('ETL_USER_ROLE',
                              db.Column('USER_ID', db.Integer, db.ForeignKey('ETL_USER.id'), primary_key=True),
                              db.Column('ROLE_ID', db.Integer, db.ForeignKey('ETL_ROLE.id'), primary_key=True))
 
@@ -18,6 +18,7 @@ class User(BaseModel):
     password_hash = db.Column(db.String(100))
     email = db.Column(db.String(255), unique=True, nullable=False)
     created_time = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    roles = db.relationship('Role', secondary=roles, cascade="save-update, merge, delete", lazy='subquery', backref=db.backref('users', lazy=True))
 
     @property
     def password(self):

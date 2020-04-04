@@ -34,6 +34,6 @@ class RoleService:
     def find_role_by_name(self, name):
         return Role.query.filter_by(name=name).first()
 
-    def list_user(self):
+    def list_role(self):
         return {'roles': [role.as_dict() for role in Role.query.all()]}
 

@@ -1,5 +1,6 @@
 click
 Werkzeug==0.16.1
+requests
 flask
 flask_cors
 flask_bcrypt

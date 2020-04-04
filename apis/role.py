@@ -42,7 +42,7 @@ class RoleList(Resource):
     @role_api.doc(description='retrieve user list', security='jwt')
     @role_api.marshal_with(list_role_dto)
     def get(self):
-        return self.service.list_user()
+        return self.service.list_role()
 
 
 @role_api.route("/")

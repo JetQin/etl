@@ -1,0 +1,1 @@
+insert into ETL_USER(username, password_hash, email, created_time) values ('admin', '$2b$12$aaoNXDPaaK0w5qFces4OResxBm3BWJLfV83Fbde/uk9op/hilKZUG', 'jetqin@yahoo.com', datetime('now'))
