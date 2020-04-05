@@ -18,6 +18,7 @@ class TestRoleService(unittest.TestCase):
         assert result['name'] == 'test_admin'
 
     def test_list_role(self):
-        self.service.list_role_value = [self.role.as_dict()]
+        self.service.list_role.return_value = [self.role.as_dict()]
         result = self.service.list_role()
         self.service.list_role.assert_called_once()
+        assert len(result) == 1

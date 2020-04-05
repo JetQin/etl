@@ -70,7 +70,8 @@ def create_app(profile=None):
     logger.info("***create app**")
     profile = os.environ.get('profile', 'test') if profile is None else profile
     app.config.from_object(configs[profile])
-    log_config = os.path.abspath('logging.yaml')
+    log_file_path = app.config['LOG_FILE']
+    log_config = os.path.abspath(log_file_path)
     with open(log_config) as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

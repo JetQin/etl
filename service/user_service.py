@@ -50,7 +50,6 @@ class UserService:
             user.roles = []
         db.session.commit()
 
-
     def list_user(self):
         return {'users': [user.as_dict() for user in User.query.all()]}
 
